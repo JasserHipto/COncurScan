@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import Select from 'react-select';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Row1 = () => {
   const [selectedVertical, setSelectedVertical] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(new Date());
-  
+
   const verticalOptions = [
     { value: 'option1', label: 'Option 1' },
     { value: 'option2', label: 'Option 2' },
@@ -21,49 +21,79 @@ const Row1 = () => {
   };
 
   const handlePeriodChange = () => {
-    setShowCalendar(!showCalendar); // Afficher ou masquer le calendrier au clic sur le bouton de période
+    setShowCalendar(!showCalendar);
   };
 
-  const handleCalendarClick = (date) => {
-    if (selectedPeriod.length === 0) {
-      setSelectedPeriod([date]); // Définir le début de la période
-    } else if (selectedPeriod.length === 1 && date > selectedPeriod[0]) {
-      const periodEnd = date;
-      setSelectedPeriod([selectedPeriod[0], periodEnd]); // Définir la fin de la période
-      setShowCalendar(false); // Masquer le calendrier après la sélection de la période
-    } else {
-      // Gérer le cas où le deuxième clic est antérieur au premier clic
-      setSelectedPeriod([date]); // Redéfinir le début de la période
+  const handleCalendarSelect = (range) => {
+    if (Array.isArray(range) && range.length === 2) {
+      setSelectedPeriod(range);
+      setShowCalendar(false); // Hide the calendar after selecting the range
     }
+  };
+
+  const handlePeriodClear = () => {
+    setSelectedPeriod([]);
   };
 
   return (
     <div>
       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-        Sélection Verticale et Période
+        Benchmark Concurrentiel - Facebook
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Select
-          options={verticalOptions}
-          value={selectedVertical}
-          onChange={handleVerticalChange}
-          placeholder="Sélectionnez une option verticale"
-          isMulti={true}
-        />
-        <button onClick={handlePeriodChange} style={{ cursor: 'pointer' }}>Sélectionner une période</button>
+      <Box sx={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+        <Box>
+          <Typography variant="subtitle1" sx={{ marginBottom: '5px' }}>
+            Verticale
+          </Typography>
+          <Box sx={{ width: '300px' }}>
+            <Select
+              options={verticalOptions}
+              value={selectedVertical}
+              onChange={handleVerticalChange}
+              placeholder="Choisir"
+              isMulti
+            />
+          </Box>
+        </Box>
+        <Box>
+          <Typography variant="subtitle1" sx={{ marginBottom: '5px' }}>
+            Période
+          </Typography>
+          <Box sx={{ width: '300px', display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ width: '100%' }}>
+              <Select
+                placeholder="Choisir"
+                value={
+                  selectedPeriod.length > 0
+                    ? { label: `${selectedPeriod[0].toLocaleDateString()} - ${selectedPeriod[1] ? selectedPeriod[1].toLocaleDateString() : 'Non spécifié'}`, value: 'selectedPeriod' }
+                    : null
+                }
+                onFocus={handlePeriodChange}
+                menuIsOpen={false} // Prevents the default dropdown from opening
+                components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
+                isClearable={false}
+              />
+            </Box>
+            {selectedPeriod.length > 0 && (
+              <IconButton onClick={handlePeriodClear} size="small" sx={{ marginLeft: '5px' }}>
+                <CloseIcon />
+              </IconButton>
+            )}
+          </Box>
+        </Box>
       </Box>
       {showCalendar && (
-        <Box sx={{ marginTop: '10px' }}>
+        <Box sx={{ marginTop: '10px', position: 'relative' }}>
           <Calendar
-            onChange={handleCalendarClick}
-            value={calendarDate}
-            selectRange={true} // Permettre la sélection d'une période dans le calendrier
+            onChange={handleCalendarSelect}
+            selectRange={true} // Allow range selection in the calendar
+            value={selectedPeriod}
           />
         </Box>
       )}
       {selectedPeriod.length > 0 && (
-        <Typography variant="body1" sx={{ marginTop: '10px' }}>
-          Période sélectionnée : {selectedPeriod[0] instanceof Date ? selectedPeriod[0].toLocaleDateString() : 'Non spécifié'} - {selectedPeriod[1] instanceof Date ? selectedPeriod[1].toLocaleDateString() : 'Non spécifié'}
+        <Typography variant="body1" sx={{ marginTop: '20px' }}>
+          Période sélectionnée : {selectedPeriod[0].toLocaleDateString()} - {selectedPeriod[1] ? selectedPeriod[1].toLocaleDateString() : 'Non spécifié'}
         </Typography>
       )}
     </div>

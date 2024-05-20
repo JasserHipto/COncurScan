@@ -9,53 +9,58 @@ import logo_2 from '../../images/logos/logo-2.png';
 import './login.css';
 
 const Login = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Utiliser useNavigate pour la navigation
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    try {
-      const response = await fetch(`${BASE_URL}/${api_version}/token`, {
-        method: 'POST',
-        body: JSON.stringify({ user_email: email, user_password: password }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
+    const formdata = new FormData();
+    formdata.append('user_email', email);
+    formdata.append('user_password', password);
+    const requestOptions = {
+      method: 'POST',
+      body: formdata,
+      redirect: 'follow',
+    };
+    fetch(`${BASE_URL}/${api_version}/token`, requestOptions)
+      .then((response) => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error('');
+        }
+      })
+      .then((token) => {
+        localStorage.setItem('token', token);
+        // Afficher la boîte de dialogue de succès avec le bouton "Ok" masqué
         Swal.fire({
           icon: 'success',
           text: 'Top, connexion établie!',
           customClass: {
             popup: 'my-custom-modal',
           },
-          width: '30%',
-          showConfirmButton: false,
-          timer: 1000,
+          width: '30%', // Définir la largeur du modal
+          showConfirmButton: false, // Masquer le bouton "Ok"
+          timer: 1000, // Fermer automatiquement après 10 secondes
+          //timerProgressBar: true // Afficher une barre de progression du temps restant
         }).then(() => {
-          navigate('/Pioche');
+          navigate('/Dashboard');
         });
-      } else {
-        throw new Error('Erreur de connexion');
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        text: 'Merci de vérifier vos paramètres de connexion!',
-        width: '30%',
-        confirmButtonText: "Ok, j'ai compris!",
-        confirmButtonColor: '#0095E8',
+      })
+      .catch((error) => {
+        // Afficher la boîte de dialogue d'erreur
+        Swal.fire({
+          icon: 'error',
+          //title: 'Erreur de connexion',
+          text: 'Merci de vérifier vos paramètres de connexion!',
+          width: '30%',
+          confirmButtonText: "Ok, j'ai compris!",
+          confirmButtonColor: '#0095E8',
+        });
+        setError(error.message);
       });
-      setError(error.message);
-    }
   };
-
   return (
     <Grid container className="centered-container">
       <Grid item xs={6} className="grid-left centered-item">

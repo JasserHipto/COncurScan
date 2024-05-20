@@ -1,14 +1,15 @@
 import React from "react";
 import Header from "../../components/Header";
 import Row1 from "./Row1";
+import Row2 from "./Row2";
 
 
 const Dashboard = () => {
   return (
     <div>
-      <Header title={"DASHBORAD"} subTitle={"Welcome To Dashboard"} />
-      <Row1/>
       
+      <Row1/>
+      <Row2/>
     </div>
   );
 };
